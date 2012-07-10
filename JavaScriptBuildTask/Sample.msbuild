@@ -1,0 +1,29 @@
+﻿<Project DefaultTargets="RunJS" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<UsingTask AssemblyFile="bin/Debug/JavaScriptBuildTask.dll" TaskName="JavaScriptBuildTask.JS" />
+
+	<PropertyGroup>
+    <JavaScriptCode>
+      <![CDATA[
+      var a = function(e) {
+        this.e = e;
+      }
+      
+      var b = new a("hello world");
+      
+      
+      print(b.e);
+      
+      
+      ]]>
+      
+    </JavaScriptCode> 
+	</PropertyGroup>
+
+  <ItemGroup>
+    <BuildScripts Include="BuildScripts/*.js"></BuildScripts>    
+  </ItemGroup>
+
+    <Target Name="RunJS">
+  		<JS Code="$(JavaScriptCode)" Sources="@(BuildScripts)" />
+	  </Target>
+</Project>
