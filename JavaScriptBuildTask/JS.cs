@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Build.Framework;
+using Tools;
 
 namespace JavaScriptBuildTask
 {
@@ -10,8 +11,21 @@ namespace JavaScriptBuildTask
         public IBuildEngine BuildEngine { get; set; }
         public ITaskHost HostObject { get; set; }
 
+        /// <summary>
+        /// Please note that the account that instantiates the Impersonator class needs to have the 'Act as part of operating system' privilege set.
+        /// </summary>
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string Domain { get; set; }
+        
+        /// <summary>
+        /// Must be set to true, if you want to actually do the impersonation
+        /// </summary>
+        public bool Impersonate { get; set; }
+
         public JS()
         {
+            
             AllowClr = true;
             Debug = true;
             DisableSecurity = true;
@@ -19,56 +33,72 @@ namespace JavaScriptBuildTask
         Jint.JintEngine je = new Jint.JintEngine();
         public bool Execute()
         {
-            
-            List<string> results = new List<string>();
+            Tools.Impersonator imp = null;
             try
             {
-                if (Sources != null && Sources.Length > 0)
+                if (this.Impersonate && !string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password)) imp = new Impersonator(Username, Domain, Password);
+
+                List<string> results = new List<string>();
+                try
                 {
-                    foreach (var item in Sources)
+                    if (Sources != null && Sources.Length > 0)
                     {
-                        if (!string.IsNullOrEmpty(item))
+                        foreach (var item in Sources)
                         {
-                            if (System.IO.File.Exists(item))
+                            if (!string.IsNullOrEmpty(item))
                             {
-                                string script = System.IO.File.ReadAllText(item);
-                                results.Add(Execute(script));
+                                if (System.IO.File.Exists(item))
+                                {
+                                    string script = System.IO.File.ReadAllText(item);
+                                    results.Add(Execute(script));
+                                }
+                                else
+                                {
+                                    results.Add("");
+                                }
                             }
                             else
                             {
                                 results.Add("");
                             }
-                        }
-                        else
-                        {
-                            results.Add("");
+
                         }
 
                     }
-
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(this.Code))
-                        results.Add(Execute(this.Code));
                     else
-                        results.Add("");
+                    {
+                        if (!string.IsNullOrEmpty(this.Code))
+                            results.Add(Execute(this.Code));
+                        else
+                            results.Add("");
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    results.Add(e.ToString());
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(e);
+                    Console.ResetColor();
+                    return false;
                 }
 
+                this.CompilerResults = results.ToArray();
+
+                return true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                results.Add(e.ToString());
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(e);
-                Console.ResetColor();
-                return false;
+                throw;
+            }
+            finally
+            {
+                if (this.Impersonate && imp != null) imp.Dispose();
+
             }
 
-            this.CompilerResults = results.ToArray();
-
-            return true;
         }
+
         private bool initDone = false;
 
         private string Execute(string Input)

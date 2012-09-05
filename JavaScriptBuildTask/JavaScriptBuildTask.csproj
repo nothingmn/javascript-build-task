@@ -40,6 +40,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Impersonator.cs" />
     <Compile Include="JS.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -49,6 +50,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="BuildScripts\Impersonation.js" />
     <Content Include="BuildScripts\SampleScript2.js" />
     <Content Include="BuildScripts\SampleScript1.js" />
     <Content Include="Resources\Jint.dll" />

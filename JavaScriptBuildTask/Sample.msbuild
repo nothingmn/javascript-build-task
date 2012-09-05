@@ -6,14 +6,9 @@
       <![CDATA[
       var a = function(e) {
         this.e = e;
-      }
-      
-      var b = new a("hello world");
-      
-      
-      print(b.e);
-      
-      
+      }      
+      var b = new a("hello " + System.Environment.UserName);          
+      print(b.e);           
       ]]>
       
     </JavaScriptCode> 
@@ -23,7 +18,11 @@
     <BuildScripts Include="BuildScripts/*.js"></BuildScripts>    
   </ItemGroup>
 
-    <Target Name="RunJS">
-  		<JS Code="$(JavaScriptCode)" Sources="@(BuildScripts)" />
-	  </Target>
+  <Target Name="RunJS">
+    <JS Code="$(JavaScriptCode)" Sources="@(BuildScripts)" />
+  </Target>
+  <Target Name="RunJSImpersonate">
+    <JS Code="$(JavaScriptCode)" Impersonate="true" Username="debug" Password="password#1" Domain="." />
+  </Target>
+
 </Project>
